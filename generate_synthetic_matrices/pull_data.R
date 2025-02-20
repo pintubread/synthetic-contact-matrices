@@ -87,4 +87,76 @@ dataset <- merge(dataset,teachers,by.x="iso3c",by.y="iso")
 
 save(dataset,file="collated_inputs.RData")
 
-load('input/wbindicators.rdata') #cannot work, pull from country_indicators
+countries <- as.vector(unique(dataset$iso3c))
+save(countries, file="countries.RData")
+
+################################################################################
+
+load("wb_dataset.RData")
+dataset_final <- merge(dataset,wb_dataset,by="iso3c",all.x = T)
+dataset_final <- dataset_final[which(rowSums(is.na(dataset_final))==0),]
+
+save(dataset_final,file="dataset_final.RData")
+
+################################################################################
+load('input/pop/popfemale.rdata')
+load('input/pop/popmale.rdata')
+
+
+colnames(popfemale)[4:25] <- sapply(colnames(popfemale[,4:25]),function(x){paste0(x,"_popfemale")})
+colnames(popmale)[4:25] <- sapply(colnames(popmale[,4:25]),function(x){paste0(x,"_popmale")})
+
+dataset_final <- merge(dataset_final, popfemale, by=c("iso3c","year","countryname"))
+dataset_final <- merge(dataset_final, popmale, by=c("iso3c","year","countryname"))
+
+
+colnames(popUrban$total_female)[4:25] <- sapply(colnames(popUrban$total_female[,4:25]),function(x){paste0(x,"_number_urban_females")}) 
+colnames(popUrban$total_male)[4:25] <- sapply(colnames(popUrban$total_male[,4:25]),function(x){paste0(x,"_number_urban_males")}) 
+
+dataset_final <- merge(dataset_final,popUrban$total_female,by=c("iso3c","countryname","year"))
+dataset_final <- merge(dataset_final,popUrban$total_male,by=c("iso3c","countryname","year"))
+
+colnames(popRural$total_female)[4:25] <- sapply(colnames(popRural$total_female[,4:25]),function(x){paste0(x,"_number_rural_females")}) 
+colnames(popRural$total_male)[4:25] <- sapply(colnames(popRural$total_male[,4:25]),function(x){paste0(x,"_number_rural_males")}) 
+
+dataset_final <- merge(dataset_final,popRural$total_female,by=c("iso3c","countryname","year"))
+dataset_final <- merge(dataset_final,popRural$total_male,by=c("iso3c","countryname","year"))
+
+save(dataset_final,file="dataset_final.RData")
+
+###############################################################################
+load('dataset_final.RData')
+load('input/school/schoolage.rdata')
+colnames(school)[4:17] <- sapply(colnames(popmale[,4:17]),function(x){paste0(x,"_school")})
+dataset_final <- merge(dataset_final,school,by.x="iso3c",by.y="iso")
+dataset_final <- dataset_final[,-c(442,443)]
+
+load('input/work/workpopage_urban.rdata')
+load('input/work/workpopage_rural.rdata')
+
+workpopage_rural$total <- workpopage_rural$total[,-c(2,3,5,6,7,8,20,21)]
+colnames(workpopage_rural$total)[3:13] <- sapply(colnames(workpopage_rural$total[,3:13]),function(x){paste0(x,"_workpop_ratio_rural")}) 
+workpopage_rural$male <- workpopage_rural$male[,-c(2,3,5,6,7,8,20,21)]
+colnames(workpopage_rural$male)[3:13] <- sapply(colnames(workpopage_rural$male[,3:13]),function(x){paste0(x,"_male_workpop_ratio_rural")}) 
+workpopage_rural$female <- workpopage_rural$female[,-c(2,3,5,6,7,8,20,21)]
+colnames(workpopage_rural$female)[3:13] <- sapply(colnames(workpopage_rural$female[,3:13]),function(x){paste0(x,"_female_workpop_ratio_rural")}) 
+
+dataset_final <- merge(dataset_final,workpopage_rural$total,by=c("iso3c","year"))
+dataset_final <- merge(dataset_final,workpopage_rural$male,by=c("iso3c","year"))
+dataset_final <- merge(dataset_final,workpopage_rural$female,by=c("iso3c","year"))
+
+
+
+workpopage_urban$total <- workpopage_urban$total[,-c(2,3,5,6,7,8,20,21)]
+colnames(workpopage_urban$total)[3:13] <- sapply(colnames(workpopage_urban$total[,3:13]),function(x){paste0(x,"_workpop_ratio_urban")}) 
+workpopage_urban$male <- workpopage_urban$male[,-c(2,3,5,6,7,8,20,21)]
+colnames(workpopage_urban$male)[3:13] <- sapply(colnames(workpopage_urban$male[,3:13]),function(x){paste0(x,"_male_workpop_ratio_urban")}) 
+workpopage_urban$female <- workpopage_urban$female[,-c(2,3,5,6,7,8,20,21)]
+colnames(workpopage_urban$female)[3:13] <- sapply(colnames(workpopage_urban$female[,3:13]),function(x){paste0(x,"_female_workpop_ratio_urban")}) 
+
+dataset_final <- merge(dataset_final,workpopage_urban$total,by=c("iso3c","year"))
+dataset_final <- merge(dataset_final,workpopage_urban$male,by=c("iso3c","year"))
+dataset_final <- merge(dataset_final,workpopage_urban$female,by=c("iso3c","year"))
+
+
+save(dataset_final,file="dataset_final.RData")
