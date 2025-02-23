@@ -125,11 +125,11 @@ dataset_final <- merge(dataset_final,popRural$total_male,by=c("iso3c","countryna
 save(dataset_final,file="dataset_final.RData")
 
 ###############################################################################
-load('dataset_final.RData')
-load('input/school/schoolage.rdata')
-colnames(school)[4:17] <- sapply(colnames(popmale[,4:17]),function(x){paste0(x,"_school")})
-dataset_final <- merge(dataset_final,school,by.x="iso3c",by.y="iso")
-dataset_final <- dataset_final[,-c(442,443)]
+# load('dataset_final.RData')
+# load('input/school/schoolage.rdata')
+# colnames(school)[4:17] <- sapply(colnames(popmale[,4:17]),function(x){paste0(x,"_school")})
+# dataset_final <- merge(dataset_final,school,by.x="iso3c",by.y="iso")
+# dataset_final <- dataset_final[,-c(442,443)]
 
 load('input/work/workpopage_urban.rdata')
 load('input/work/workpopage_rural.rdata')
@@ -160,3 +160,70 @@ dataset_final <- merge(dataset_final,workpopage_urban$female,by=c("iso3c","year"
 
 
 save(dataset_final,file="dataset_final.RData")
+################################################################################
+load("dataset_final.RData")
+
+#dataset_final <- dataset_final[,-(428:441)]
+
+colnames(school)[2:17] <- sapply(colnames(school[,2:17]),function(x){paste0(x,"_school")})
+dataset_final <- merge(dataset_final,school,by.x="iso3c",by.y="iso")
+dataset_final <- dataset_final[,-c(508,509)]
+
+save(dataset_final,file="dataset_final.RData")
+
+################################################################################
+dataset_final <- dataset_final[,!colnames(dataset_final) %in% c('total_rural_female',
+                                                                'total_urban_female',
+                                                                'total_urban_male',
+                                                                'total_rural_male',
+                                                                'pop_female_total',
+                                                                'pop_male_total')]
+load('input/school/students_rural.rdata')
+load('input/school/students_urban.rdata')
+
+students_rural <- students_rural[,1:6]
+students_urban <- students_urban[,1:6]
+
+load('input/school/teachers_rural.rdata')
+load('input/school/teachers_urban.rdata')
+
+teachers_rural <- teachers_rural[,-c(2:5,16:17)]
+teachers_urban <- teachers_urban[,-c(2:5,16:17)]
+
+colnames(students_rural)[2:6] <- sapply(colnames(students_rural)[2:6],
+                                        function(x){paste0(x,"_num_students_rural")})
+
+colnames(students_urban)[2:6] <- sapply(colnames(students_urban)[2:6],
+                                        function(x){paste0(x,"_num_students_urban")})
+
+dataset_final <- merge(dataset_final, students_rural, by.x="iso3c",by.y="iso",
+                       all.x = T)
+dataset_final <- merge(dataset_final, students_urban, by.x="iso3c",by.y="iso",
+                       all.x = T)
+
+colnames(teachers_rural)[2:11] <- sapply(colnames(teachers_rural)[2:11],
+                                        function(x){paste0(x,"_num_teachers_rural")})
+colnames(teachers_urban)[2:11] <- sapply(colnames(teachers_urban)[2:11],
+                                         function(x){paste0(x,"_num_teachers_urban")})
+dataset_final <- merge(dataset_final, teachers_rural, by.x="iso3c",by.y="iso",
+                       all.x = T)
+dataset_final <- merge(dataset_final, teachers_urban, by.x="iso3c",by.y="iso",
+                       all.x = T)
+
+load('input/school/schoolage_urban.rdata')
+load('input/school/schoolage_rural.rdata')
+
+school_rural <- school_rural[,-c(16:17)]
+school_urban <- school_urban[,-c(16:17)]
+
+colnames(school_rural)[2:15] <- sapply(colnames(school_rural)[2:15],
+                                         function(x){paste0(x,"_school_rural")})
+colnames(school_urban)[2:15] <- sapply(colnames(school_urban)[2:15],
+                                         function(x){paste0(x,"_school_urban")})
+
+dataset_final <- merge(dataset_final, school_rural, by.x="iso3c",by.y="iso",
+                       all.x = T)
+dataset_final <- merge(dataset_final, school_urban, by.x="iso3c",by.y="iso",
+                       all.x = T)
+
+save(dataset_final,file = "dataset_final.RData")
